@@ -1,11 +1,13 @@
 import socket, time, json
 import os.path
-host = "127.0.0.1"
+host = "51.83.203.114"
 port = 9090
 RUN = True
-password = "Annelo123"
+password = "ALlolIK123"
 mass = 8192
 
+if password == "" or password == None:
+    password = input("Input password: ")
 
 if os.path.isfile("bots.list"):
 	with open('bots.list', 'r') as fr:
@@ -17,10 +19,14 @@ else:
 def key():
     return(int(time.strftime("%M", time.localtime()))^2)
 
-def getInfo(info,data,key):
-    return(decrypt(data.get(info),key))
+def getInfo(info,data):
+    if data.get(info) == None:
+        return("error")
+    else:
+        return(data.get(info))
 
 def decrypt(data,key):
+    if data == None: return("error")
     decrypt = ""
     k = True
     for i in data.decode("utf-8"):
@@ -43,7 +49,7 @@ def crypt(data,key):
 while RUN:
     s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
     s.bind((host,port))
-
+    print(0)
     quit = False
     print("[ Server Started ]")
 
@@ -52,25 +58,28 @@ while RUN:
         try:
             data, addr = s.recvfrom(mass)
             data_temp = json.loads(data.decode("utf-8"))
-
+            print(0)
             if addr not in clients:
                 clients.append(addr)
-				
-            if getInfo("mass",data_temp,key()) != mass and getInfo("mass",data_temp,key()) != None:
-                mass = getInfo("mass",data_temp,key())
-
-            itsatime = time.strftime("%Y-%m-%d-%H.%M.%S", time.localtime())
-
-            print("["+addr[0]+"]=["+str(addr[1])+"]=["+itsatime+"]/",end="")
-            print(data.decode("utf-8"))
-
-            if getInfo("password",data_temp,key()) == password:
-                for client in clients:
-                    if addr != client:
-                        s.sendto(data,client)
+            print(0)
+            if getInfo("mass",data_temp) != "error" and getInfo("mass",data_temp) != mass: # Not Crypted 
+                mass = int(getInfo("mass",data_temp))                                      # Not Crypted 
+            #print("["+addr[0]+"]=["+str(addr[1])+"]=["+itsatime+"]/",end="")
+            #print(data.decode("utf-8"))
+            time.sleep(5)
+            if decrypt(data_temp.get("password"),key()) == password:                       # Crypted
+                #s.sendto(data,addr)                                                       # Crypted
+                for client in clients:                                                     # Crypted
+                    if addr != client:                                                     # Crypted
+                        s.sendto(data,client)                                              # Crypted
+            else:
+                text = {"password": "Incorrect password"}
+                text = json.dumps(text)
+                s.sendto(text.encode("utf-8"),addr)
+                print("Sended")
         except:	
             print("\n[ Server Stopped ]")
             quit = True
-        with open('bots.list', 'w+') as fw:
-                json.dump(clients, fw)
+    with open('bots.list', 'w+') as fw:
+            json.dump(clients, fw)
 s.close()
