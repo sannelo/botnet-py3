@@ -1,9 +1,9 @@
 import socket, time, json
 import os.path
-host = "51.83.203.114"
+host = "none"
 port = 9090
 RUN = True
-password = "ALlolIK123"
+password = "None"
 mass = 8192
 
 if password == "" or password == None:
